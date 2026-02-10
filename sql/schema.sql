@@ -1,0 +1,44 @@
+CREATE TABLE IF NOT EXISTS suppliers (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(150) NOT NULL,
+    phone VARCHAR(50) DEFAULT NULL,
+    address TEXT DEFAULT NULL,
+    notes TEXT DEFAULT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS purchase_orders (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    po_number VARCHAR(30) NOT NULL UNIQUE,
+    supplier_id INT NOT NULL,
+    status ENUM('Pending', 'Partial', 'Completed') NOT NULL DEFAULT 'Pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_po_supplier FOREIGN KEY (supplier_id) REFERENCES suppliers(id)
+);
+
+CREATE TABLE IF NOT EXISTS purchase_order_items (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    po_id INT NOT NULL,
+    item_name VARCHAR(150) NOT NULL,
+    ordered_qty DECIMAL(10,2) NOT NULL,
+    received_qty DECIMAL(10,2) NOT NULL DEFAULT 0,
+    unit_price DECIMAL(12,2) DEFAULT NULL,
+    CONSTRAINT fk_poi_po FOREIGN KEY (po_id) REFERENCES purchase_orders(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS receiving_logs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    po_item_id INT NOT NULL,
+    received_qty DECIMAL(10,2) NOT NULL,
+    note VARCHAR(255) DEFAULT NULL,
+    received_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_receiving_item FOREIGN KEY (po_item_id) REFERENCES purchase_order_items(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS stock_items (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    item_name VARCHAR(150) NOT NULL UNIQUE,
+    stock_qty DECIMAL(10,2) NOT NULL DEFAULT 0,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
